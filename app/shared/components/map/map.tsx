@@ -1,52 +1,58 @@
-import React, { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ViewShot from 'react-native-view-shot';
 import { CustomMarker } from './custom-marker';
+import dataMocks from './data/data-mocks.json';
+import { useLocation } from './hooks/useLocation';
+import { MarkerModal } from './marker-modal';
 
-export default function Map() {
-  const markers = [
-    {
-      id: '1',
-      coordinate: {
-        latitude: 40.4168,
-        longitude: -3.7038,
-      },
-      imageUrl: 'https://i.pravatar.cc/150?img=1',
-      title: 'Madrid',
-    },
-    {
-      id: '2',
-      coordinate: {
-        latitude: 41.3851,
-        longitude: 2.1734,
-      },
-      imageUrl: 'https://i.pravatar.cc/150?img=2',
-      title: 'Barcelona',
-    },
-  ];
+const Map = () => {
+  const { location, error, loading } = useLocation();
+  const mapRef = useRef<MapView>(null);
+  
+  // Estados para el modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState<any>(null);
+
+  // Memoizar los marcadores para evitar re-renderizados innecesarios
+  const markers = useMemo(() => dataMocks, []);
 
   const [markerIcons, setMarkerIcons] = useState<{ [key: string]: any }>({});
   const viewShotRefs = useRef<{ [key: string]: ViewShot | null }>({});
 
-  const handleImageLoad = (markerId: string) => {
+  // Función para abrir el modal con el marcador seleccionado
+  const handleMarkerPress = useCallback((marker: any) => {
+    setSelectedMarker(marker);
+    setModalVisible(true);
+  }, []);
+
+  // Función para cerrar el modal
+  const handleCloseModal = useCallback(() => {
+    setModalVisible(false);
+    setSelectedMarker(null);
+  }, []);
+
+  const handleImageLoad = useCallback((markerId: string) => {
     setTimeout(() => {
       const ref = viewShotRefs.current[markerId];
       if (ref) {
-        ref.capture?.().then((uri) => {
-          console.log('Marcador capturado:', markerId, uri);
-          setMarkerIcons((prevIcons) => ({
-            ...prevIcons,
-            [markerId]: { uri },
-          }));
-        }).catch((error) => {
-          console.error('Error capturando marcador:', markerId, error);
-        });
+        ref.capture?.()
+          .then((uri) => {
+            console.log('Marcador capturado:', markerId, uri);
+            setMarkerIcons((prevIcons) => ({
+              ...prevIcons,
+              [markerId]: { uri },
+            }));
+          })
+          .catch((error) => {
+            console.error('Error capturando marcador:', markerId, error);
+          });
       }
-    }, 10); // Más tiempo para que cargue
-  };
+    }, 100);
+  }, []);
 
-  const renderHiddenMarkers = () => {
+  const renderHiddenMarkers = useCallback(() => {
     return markers.map((marker) => (
       <ViewShot
         key={`hidden-${marker.id}`}
@@ -63,7 +69,52 @@ export default function Map() {
         />
       </ViewShot>
     ));
-  };
+  }, [markers, handleImageLoad]);
+
+  // Centrar el mapa en tu ubicación cuando cargue
+  useEffect(() => {
+    if (location && mapRef.current) {
+      mapRef.current.animateToRegion(
+        {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        },
+        1000
+      );
+    }
+  }, [location]);
+
+  // Memoizar la región inicial para evitar re-renderizados
+  const initialRegion = useMemo(() => {
+    if (location) {
+      return {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+    }
+    return {
+      latitude: 4.1255715,
+      longitude: -73.6387064,
+      latitudeDelta: 0.1,
+      longitudeDelta: 0.1,
+    };
+  }, [location]);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#42A5F5" />
+      </View>
+    );
+  }
+
+  if (error) {
+    console.error('Error de ubicación:', error);
+  }
 
   return (
     <View style={styles.container}>
@@ -73,9 +124,13 @@ export default function Map() {
       </View>
 
       <MapView 
+        ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         customMapStyle={instagramDarkStyleWithLabels}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+        followsUserLocation={true}
         showsPointsOfInterest={false}
         showsBuildings={false}
         showsTraffic={false}
@@ -87,15 +142,34 @@ export default function Map() {
         scrollEnabled={true}
         pitchEnabled={false}
         rotateEnabled={false}
-        initialRegion={{
-          latitude: 40.4168,
-          longitude: -3.7038,
-          latitudeDelta: 5,
-          longitudeDelta: 5,
-        }}
+        initialRegion={initialRegion}
       >
+        {/* Marcador personalizado en tu ubicación */}
+        {location && (
+          <>
+            <Marker
+              coordinate={location}
+              anchor={{ x: 0.5, y: 0.5 }}
+              tracksViewChanges={false}
+            >
+              <View style={styles.userLocationMarker}>
+                <View style={styles.userLocationDot} />
+              </View>
+            </Marker>
+            
+            {/* Círculo de precisión */}
+            <Circle
+              center={location}
+              radius={50}
+              fillColor="rgba(66, 165, 245, 0.2)"
+              strokeColor="rgba(66, 165, 245, 0.5)"
+              strokeWidth={2}
+            />
+          </>
+        )}
+
+        {/* Tus marcadores personalizados */}
         {markers.map((marker) => {
-          // Si no hay icono aún, mostrar el componente directamente
           if (!markerIcons[marker.id]) {
             return (
               <Marker
@@ -103,6 +177,7 @@ export default function Map() {
                 coordinate={marker.coordinate}
                 anchor={{ x: 0.5, y: 0.5 }}
                 tracksViewChanges={true}
+                onPress={() => handleMarkerPress(marker)}
               >
                 <CustomMarker 
                   imageUrl={marker.imageUrl} 
@@ -113,7 +188,6 @@ export default function Map() {
             );
           }
           
-          // Una vez capturado, usar el icono
           return (
             <Marker
               key={marker.id}
@@ -121,49 +195,57 @@ export default function Map() {
               icon={markerIcons[marker.id]}
               anchor={{ x: 0.5, y: 0.5 }}
               tracksViewChanges={false}
+              onPress={() => handleMarkerPress(marker)}
             />
           );
         })}
       </MapView>
+
+      {/* Modal para mostrar información del marcador */}
+      <MarkerModal
+        visible={modalVisible}
+        marker={selectedMarker}
+        onClose={handleCloseModal}
+      />
     </View>
   );
-}
+};
 
 const instagramDarkStyleWithLabels = [
   {
-    "elementType": "geometry",
-    "stylers": [{ "color": "#1a2a3a" }]
+    elementType: "geometry",
+    stylers: [{ color: "#1a2a3a" }]
   },
   {
-    "elementType": "labels.icon",
-    "stylers": [{ "visibility": "off" }]
+    elementType: "labels.icon",
+    stylers: [{ visibility: "off" }]
   },
   {
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#c9d1d9" }]
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#c9d1d9" }]
   },
   {
-    "elementType": "labels.text.stroke",
-    "stylers": [{ "color": "#1a2a3a", "weight": 2 }]
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#1a2a3a", weight: 2 }]
   },
   {
-    "featureType": "administrative.locality",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#e3f2fd" }]
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#e3f2fd" }]
   },
   {
-    "featureType": "poi",
-    "stylers": [{ "visibility": "off" }]
+    featureType: "poi",
+    stylers: [{ visibility: "off" }]
   },
   {
-    "featureType": "road",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#2c3e50" }]
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#2c3e50" }]
   },
   {
-    "featureType": "water",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#0d1b2a" }]
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#0d1b2a" }]
   }
 ];
 
@@ -174,6 +256,10 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   hiddenContainer: {
     position: 'absolute',
     left: -1000,
@@ -183,4 +269,27 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
   },
+  userLocationMarker: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(66, 165, 245, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  userLocationDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#42A5F5',
+  },
 });
+
+export default Map;

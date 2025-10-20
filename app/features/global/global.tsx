@@ -1,39 +1,20 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Map from '../../shared/components/map/map'; // 👈 Importa tu componente Map
-import { ThemedText } from '../../shared/components/themed-text';
 import { ThemedView } from '../../shared/components/themed-view';
 
-export default function GlobalScreen() {
+const GlobalScreen = React.memo(function GlobalScreen() {
   return (
     <ThemedView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          Global
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Descubre contenido de todo el mundo
-        </ThemedText>
-      </View>
-
       {/* Mapa ocupa el resto de la pantalla */}
       <View style={styles.mapContainer}>
         <Map />
       </View>
-
-      {/* Botón opcional flotante sobre el mapa */}
-      {/* <View style={styles.buttonContainer}>
-        <Button
-          title="Ir a Autenticación"
-          onPress={() => router.push('/features/auth/login')}
-          variant="primary"
-          style={styles.button}
-        />
-      </View> */}
     </ThemedView>
   );
-}
+});
+
+export default GlobalScreen;
 
 const styles = StyleSheet.create({
   container: {

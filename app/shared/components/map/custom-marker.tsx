@@ -78,7 +78,7 @@ export function CustomMarker({ imageUrl, size = 50, onImageLoad }: CustomMarkerP
       }}
     >
       {/* 3 Ondas animadas que se expanden */}
-      <Animated.View
+      {/* <Animated.View
         style={[
           styles.wave,
           {
@@ -88,8 +88,8 @@ export function CustomMarker({ imageUrl, size = 50, onImageLoad }: CustomMarkerP
           },
           createWaveStyle(wave1),
         ]}
-      />
-      <Animated.View
+      /> */}
+      {/* <Animated.View
         style={[
           styles.wave,
           {
@@ -99,8 +99,8 @@ export function CustomMarker({ imageUrl, size = 50, onImageLoad }: CustomMarkerP
           },
           createWaveStyle(wave2),
         ]}
-      />
-      <Animated.View
+      /> */}
+      {/* <Animated.View
         style={[
           styles.wave,
           {
@@ -110,7 +110,7 @@ export function CustomMarker({ imageUrl, size = 50, onImageLoad }: CustomMarkerP
           },
           createWaveStyle(wave3),
         ]}
-      />
+      /> */}
 
       {/* Marcador principal (círculo con imagen) */}
       <View style={{ width: size, height: size, position: 'absolute' }}>
@@ -153,12 +153,12 @@ export function CustomMarker({ imageUrl, size = 50, onImageLoad }: CustomMarkerP
 }
 
 const styles = StyleSheet.create({
-  wave: {
+ /*  wave: {
     position: 'absolute',
     backgroundColor: 'rgba(250, 126, 30, 0.2)',
     borderWidth: 2,
     borderColor: 'rgba(250, 126, 30, 0.4)',
-  },
+  }, */
   gradientBorder: {
     justifyContent: 'center',
     alignItems: 'center',

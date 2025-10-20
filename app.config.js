@@ -12,7 +12,8 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.tuusuario.miprimerapp",
       infoPlist: {
-        MBXAccessToken: process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN
+        NSLocationWhenInUseUsageDescription: "Necesitamos tu ubicación para mostrarte en el mapa",
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Necesitamos tu ubicación para mostrarte en el mapa"
       }
     },
     android: {
@@ -24,7 +25,11 @@ export default {
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
-      package: "com.tuusuario.miprimerapp"
+      package: "com.tuusuario.miprimerapp",
+      permissions: [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     web: {
       output: "static",
@@ -45,10 +50,12 @@ export default {
         }
       ],
       [
-        "@rnmapbox/maps",
+        "expo-location",
         {
-          RNMapboxMapsDownloadToken: process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN,
-          RNMapboxMapsVersion: "11.0.0"
+          locationAlwaysAndWhenInUsePermission: "Permite a $(PRODUCT_NAME) usar tu ubicación para mostrarte en el mapa.",
+          locationAlwaysPermission: "Permite a $(PRODUCT_NAME) usar tu ubicación en segundo plano.",
+          locationWhenInUsePermission: "Permite a $(PRODUCT_NAME) usar tu ubicación cuando uses la app.",
+          isAndroidBackgroundLocationEnabled: false
         }
       ]
     ],
@@ -56,8 +63,5 @@ export default {
       typedRoutes: true,
       reactCompiler: true
     },
-    extra: {
-      mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN
-    }
   }
 };
