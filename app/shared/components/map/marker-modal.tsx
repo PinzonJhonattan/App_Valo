@@ -1,42 +1,79 @@
+import { AntDesign, FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    Image,
-    Modal,
-    PanResponder,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  Image,
+  Modal,
+  PanResponder,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeColor } from '../../hooks/use-theme-color';
+import mockMessageData from './data/data-mcoks-message.json';
 
-interface MarkerData {
-  id: string;
-  coordinate: {
-    latitude: number;
-    longitude: number;
+
+interface MessageData {
+  messageContent: string;
+  messageType: 'TEXT' | 'AUDIO' | 'DRAW';
+  messageDate: string;
+  messageTime: string;
+  dislikes: number;
+  messageUuid: string;
+  zone: string;
+  anonymous: boolean;
+  deleted: boolean;
+  reactionsCount: {reaction: string; count: number}[];
+  usersWhoReacted: string[];
+  creator: {
+    username: string;
+    picture: string;
+    sub: string;
+    level: number;
   };
-  imageUrl: string;
-  title: string;
 }
 
 interface MarkerModalProps {
   visible: boolean;
-  marker: MarkerData | null;
+  messageUuid: string | null;
   onClose: () => void;
 }
 
 const { height: screenHeight } = Dimensions.get('window');
 
-export function MarkerModal({ visible, marker, onClose }: MarkerModalProps) {
+export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps) {
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const pan = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const isScrolling = useRef(false);
+  
+  // Obtener el color primario del tema
+  const primaryColor = useThemeColor({}, 'secondary');
+  
+  // Estado para los datos del mensaje
+  const [messageData, setMessageData] = useState<MessageData | null>(null);
+  const [loading, setLoading] = useState(false);
+  
+  // Simular petición al backend cuando se abre el modal
+  useEffect(() => {
+    if (visible && messageUuid) {
+      setLoading(true);
+      // Simular petición al backend
+      setTimeout(() => {
+        // Por ahora usamos el mock, pero aquí iría la petición real
+        const mockData = mockMessageData as MessageData[];
+        const foundMessage = mockData.find(msg => msg.messageUuid === messageUuid);
+        setMessageData(foundMessage || null);
+        setLoading(false);
+      }, 500);
+    }
+  }, [visible, messageUuid]);
 
   useEffect(() => {
     if (visible) {
@@ -54,7 +91,7 @@ export function MarkerModal({ visible, marker, onClose }: MarkerModalProps) {
         useNativeDriver: true,
       }).start();
     }
-  }, [visible]);
+  }, [visible, pan, slideAnim]);
 
   const handleClose = () => {
     Animated.timing(slideAnim, {
@@ -98,7 +135,7 @@ export function MarkerModal({ visible, marker, onClose }: MarkerModalProps) {
     })
   ).current;
 
-  if (!marker) return null;
+  if (!visible) return null;
 
   return (
     <Modal
@@ -135,7 +172,7 @@ export function MarkerModal({ visible, marker, onClose }: MarkerModalProps) {
           ]}
         >
           <SafeAreaView style={styles.safeArea}>
-            {/* Barra de arrastre - Solo aquí se puede arrastrar */}
+            {/* Barra de arrastre */}
             <View 
               style={styles.dragIndicatorContainer}
               {...panResponder.panHandlers}
@@ -151,112 +188,129 @@ export function MarkerModal({ visible, marker, onClose }: MarkerModalProps) {
               showsVerticalScrollIndicator={false}
               bounces={true}
               scrollEventThrottle={16}
-              onScrollBeginDrag={() => {
-                isScrolling.current = true;
-              }}
-              onScrollEndDrag={() => {
-                isScrolling.current = false;
-              }}
-              onMomentumScrollBegin={() => {
-                isScrolling.current = true;
-              }}
-              onMomentumScrollEnd={() => {
-                isScrolling.current = false;
-              }}
+              onScrollBeginDrag={() => { isScrolling.current = true; }}
+              onScrollEndDrag={() => { isScrolling.current = false; }}
+              onMomentumScrollBegin={() => { isScrolling.current = true; }}
+              onMomentumScrollEnd={() => { isScrolling.current = false; }}
             >
-              {/* Imagen destacada con gradiente overlay */}
-              <View style={styles.imageSection}>
-                <Image
-                  source={{ uri: marker.imageUrl }}
-                  style={styles.heroImage}
-                  resizeMode="cover"
-                />
-                <LinearGradient
-                  colors={['transparent', 'rgba(15, 23, 42, 0.9)', '#0f172a']}
-                  style={styles.imageGradient}
-                />
+               {/* ✅ FOTO DE PERFIL SALIENDO CON CÍRCULO DE FONDO */}
+               <View style={styles.profilePhotoContainer}>
+                 {/* Círculo de fondo del color de la tarjeta */}
+                 <View style={[styles.profileBackgroundCircle, { backgroundColor: primaryColor }]} />
                 
-                {/* Badge flotante */}
-                <View style={styles.badge}>
-                  <View style={styles.badgeDot} />
-                  <Text style={styles.badgeText}>Activo</Text>
+                {/* Foto con borde Instagram */}
+                <LinearGradient
+                  colors={['#feda75', '#fa7e1e', '#d62976', '#962fbf', '#4f5bd5']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.profileGradientBorder}
+                >
+                  <View style={styles.profileWhiteBorder}>
+                    <Image
+                      source={{ uri: messageData?.creator.picture || 'https://i.pravatar.cc/150?img=1' }}
+                      style={styles.profileImage}
+                    />
+                  </View>
+                </LinearGradient>
+              </View>
+
+               {/* Tarjeta Principal */}
+               <View style={styles.mainCard}>
+                 <View style={[styles.cardGradient, { backgroundColor: primaryColor }]}>
+                  {/* Espacio para la foto que sobresale */}
+                  <View style={styles.profileSpacing} />
+
+                  {/* Loading o contenido del mensaje */}
+                  {loading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="large" color="white" />
+                      <Text style={styles.loadingText}>Cargando mensaje...</Text>
+                    </View>
+                  ) : messageData ? (
+                    <>
+                      {/* Nombre del usuario */}
+                      <View style={styles.profileNameContainer}>
+                        <Text style={styles.profileName}>
+                          {messageData.anonymous ? 'Usuario anónimo' : messageData.creator.username}
+                        </Text>
+                        <Ionicons name="hand-left" size={20} color="white" style={styles.waveIcon} />
+                      </View>
+                      
+                      {/* Fecha y hora */}
+                      <Text style={styles.profileSubtitle}>
+                        {new Date(`${messageData.messageDate}T${messageData.messageTime}`).toLocaleString('es-ES')}
+                      </Text>
+
+                      {/* Tipo de mensaje */}
+                      <View style={styles.messageTypeContainer}>
+                        <Text style={styles.messageTypeText}>
+                        {messageData.messageType === 'TEXT' ? (
+                          <>
+                            <Ionicons name="create-outline" size={24} color="white" />
+                            <Text style={styles.labelText}> Post it</Text>
+                          </>
+                        ) :
+                           messageData.messageType === 'AUDIO' ? (
+                            <>
+                              <Ionicons name="mic-outline" size={24} color="white" />
+                              <Text style={styles.labelText}> Audio</Text>
+                            </>
+                          ) :
+                           messageData.messageType === 'DRAW' ? (
+                            <>
+                              <Ionicons name="create-outline" size={24} color="white" />
+                              <Text style={styles.labelText}> Dibujo</Text>
+                            </>
+                          ) :
+                           'Mensaje'} 
+                        </Text>
+                      </View>
+                    </>
+                  ) : (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>No se pudo cargar el mensaje</Text>
+                    </View>
+                  )}
+
+                  {/* Balance Cards */}
+                  <View style={styles.balanceContainer}>
+                    <View style={styles.balanceCard}>
+                      <Ionicons name="stats-chart" size={24} color="white" />
+                      <Text style={styles.balanceAmount}>$3,214</Text>
+                    </View>
+                    <View style={styles.balanceCard}>
+                      <Ionicons name="location" size={24} color="white" />
+                      <Text style={styles.balanceAmount}>$1,640</Text>
+                    </View>
+                  </View>
+
+                  {/* Botones de acción */}
+                  <View style={styles.actionButtons}>
+                    <ActionButton icon="arrow-up" iconFamily="Ionicons" label="Top up" />
+                    <ActionButton icon="card" iconFamily="Ionicons" label="My Referral" />
+                    <ActionButton icon="send" iconFamily="MaterialIcons" label="Send" />
+                    <ActionButton icon="dollar" iconFamily="FontAwesome" label="Pay" />
+                  </View>
                 </View>
               </View>
 
-              {/* Información principal */}
-              <View style={styles.mainContent}>
-                {/* Título con icono */}
-                <View style={styles.titleSection}>
-                  <View style={styles.iconContainer}>
-                    <Text style={styles.icon}>📍</Text>
-                  </View>
-                  <View style={styles.titleTextContainer}>
-                    <Text style={styles.title}>{marker.title}</Text>
-                    <Text style={styles.subtitle}>Ubicación verificada</Text>
-                  </View>
+              {/* Sección de CONTENIDO DEL MENSAJE */}
+              {messageData && (
+                <View style={styles.messagesSection}>
+                  <Text style={styles.sectionTitle}>CONTENIDO</Text>
+                  <MessageItem message={messageData} />
                 </View>
+              )}
 
-                {/* Coordenadas en cards */}
-                <View style={styles.coordinatesContainer}>
-                  <View style={styles.coordinateCard}>
-                    <Text style={styles.coordinateLabel}>Latitud</Text>
-                    <Text style={styles.coordinateValue}>
-                      {marker.coordinate.latitude.toFixed(6)}°
-                    </Text>
-                  </View>
-                  <View style={styles.coordinateCard}>
-                    <Text style={styles.coordinateLabel}>Longitud</Text>
-                    <Text style={styles.coordinateValue}>
-                      {marker.coordinate.longitude.toFixed(6)}°
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Información adicional */}
-                <View style={styles.infoSection}>
-                  <InfoItem icon="🕒" label="Horario" value="Abierto 24/7" />
-                  <InfoItem icon="📏" label="Distancia" value="2.5 km" />
-                  <InfoItem icon="⭐" label="Calificación" value="4.8/5.0" />
-                </View>
-
-                {/* Botones de acción */}
-                <View style={styles.actionsContainer}>
-                  <TouchableOpacity style={styles.primaryButton}>
-                    <LinearGradient
-                      colors={['#6366f1', '#8b5cf6', '#d946ef']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.buttonGradient}
-                    >
-                      <Text style={styles.primaryButtonText}>🧭 Navegar</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-
-                  <View style={styles.secondaryButtons}>
-                    <TouchableOpacity style={styles.secondaryButton}>
-                      <Text style={styles.secondaryButtonIcon}>📞</Text>
-                      <Text style={styles.secondaryButtonText}>Llamar</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.secondaryButton}>
-                      <Text style={styles.secondaryButtonIcon}>📤</Text>
-                      <Text style={styles.secondaryButtonText}>Compartir</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.secondaryButton}>
-                      <Text style={styles.secondaryButtonIcon}>💾</Text>
-                      <Text style={styles.secondaryButtonText}>Guardar</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
             </ScrollView>
 
-            {/* Botón cerrar flotante */}
+            {/* Botón cerrar */}
             <TouchableOpacity 
               style={styles.closeButton} 
               onPress={handleClose}
               activeOpacity={0.8}
             >
-              <Text style={styles.closeButtonText}>✕</Text>
+              <Ionicons name="close" size={20} color="#64748b" />
             </TouchableOpacity>
           </SafeAreaView>
         </Animated.View>
@@ -265,23 +319,101 @@ export function MarkerModal({ visible, marker, onClose }: MarkerModalProps) {
   );
 }
 
-// Componente auxiliar para items de información
-function InfoItem({ icon, label, value }: { icon: string; label: string; value: string }) {
+// Componente de botón de acción
+function ActionButton({ icon, iconFamily = "Ionicons", label }: { icon: string; iconFamily?: string; label: string }) {
+  const IconComponent = iconFamily === "MaterialIcons" ? MaterialIcons : 
+                       iconFamily === "FontAwesome" ? FontAwesome : 
+                       iconFamily === "AntDesign" ? AntDesign : Ionicons;
+
   return (
-    <View style={styles.infoItem}>
-      <Text style={styles.infoIcon}>{icon}</Text>
-      <View style={styles.infoTextContainer}>
-        <Text style={styles.infoLabel}>{label}</Text>
-        <Text style={styles.infoValue}>{value}</Text>
+    <TouchableOpacity style={styles.actionButton}>
+      <View style={styles.actionButtonIcon}>
+        <IconComponent name={icon as any} size={20} color="#475569" />
       </View>
-    </View>
+      <Text style={styles.actionButtonLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+
+// Componente de item de mensaje
+function MessageItem({ message }: { message: MessageData }) {
+  const getMessageIcon = () => {
+    switch (message.messageType) {
+      case 'TEXT': return 'chatbubble-outline';
+      case 'AUDIO': return 'mic-outline';
+      case 'DRAW': return 'create-outline';
+      default: return 'chatbubble-outline';
+    }
+  };
+
+  const getMessageTypeColor = () => {
+    switch (message.messageType) {
+      case 'TEXT': return '#4299E1';
+      case 'AUDIO': return '#E53E3E';
+      case 'DRAW': return '#38A169';
+      default: return '#64748b';
+    }
+  };
+
+  const formatDateTime = (date: string, time: string) => {
+    const dateObj = new Date(`${date}T${time}`);
+    return dateObj.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <TouchableOpacity style={styles.messageItem}>
+      <View style={styles.messageItemLeft}>
+        <View style={[styles.messageIconContainer, { backgroundColor: getMessageTypeColor() + '20' }]}>
+          <Ionicons name={getMessageIcon() as any} size={16} color={getMessageTypeColor()} />
+        </View>
+        <View style={styles.messageContent}>
+          <View style={styles.messageHeader}>
+            <Text style={styles.messageUsername}>
+              {message.anonymous ? 'Usuario anónimo' : message.creator.username}
+            </Text>
+            <Text style={styles.messageDateTime}>
+              {formatDateTime(message.messageDate, message.messageTime)}
+            </Text>
+          </View>
+          <Text style={styles.messageText} numberOfLines={2}>
+            {message.messageType === 'AUDIO' ? '🎵 Audio' : 
+             message.messageType === 'DRAW' ? '🎨 Dibujo' : 
+             message.messageContent}
+          </Text>
+          {message.messageType === 'AUDIO' && (
+            <Text style={styles.messageUrl} numberOfLines={1}>
+              {message.messageContent}
+            </Text>
+          )}
+        </View>
+      </View>
+      <View style={styles.messageReactions}>
+        {message.reactionsCount.map((reaction, index) => (
+          <View key={index} style={styles.reactionItem}>
+            <Text style={styles.reactionEmoji}>
+              {reaction.reaction === 'heart' ? '❤️' :
+               reaction.reaction === 'laugh' ? '😂' :
+               reaction.reaction === 'thumbs_up' ? '👍' : '👍'}
+            </Text>
+            <Text style={styles.reactionCount}>{reaction.count}</Text>
+          </View>
+        ))}
+      </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   backdrop: {
     flex: 1,
@@ -291,13 +423,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#f5f7fa',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    height: screenHeight * 0.85,
+    height: screenHeight * 0.90,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 20,
   },
@@ -306,17 +438,16 @@ const styles = StyleSheet.create({
   },
   dragIndicatorContainer: {
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: '#0f172a',
+    paddingVertical: 12,
+    backgroundColor: '#f5f7fa',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
   dragIndicator: {
-    width: 50,
-    height: 5,
-    backgroundColor: '#475569',
-    borderRadius: 3,
+    width: 40,
+    height: 4,
+    backgroundColor: '#cbd5e1',
+    borderRadius: 2,
   },
   scrollView: {
     flex: 1,
@@ -324,203 +455,324 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  imageSection: {
+
+  // ✅ FOTO DE PERFIL SALIENDO CON CÍRCULO DE FONDO
+  profilePhotoContainer: {
+    alignItems: 'center',
+    marginTop: 20,         // ← Más margen arriba para que no se tape
+    marginBottom: -52,     // ← Se superpone con la tarjeta
+    zIndex: 10,
     position: 'relative',
-    width: '100%',
-    height: 280,
   },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-  },
-  imageGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '70%',
-  },
-  badge: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(34, 197, 94, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 6,
-  },
-  badgeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#fff',
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  mainContent: {
-    padding: 24,
-  },
-  titleSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-    gap: 16,
-  },
-  iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: '#1e293b',
+  
+   // ✅ CÍRCULO DE FONDO DEL COLOR DE LA TARJETA
+   profileBackgroundCircle: {
+     position: 'absolute',
+     width: 95,            // ← Más grande que la foto
+     height: 95,
+     borderRadius: 47.5,   // ← La mitad del width/height para ser perfectamente circular
+     backgroundColor: '#4299E1', // ← Color primario por defecto
+     top: '50%',           // ← Centrado verticalmente
+     left: '50%',          // ← Centrado horizontalmente
+     marginTop: -47.5,     // ← La mitad de la altura para centrar perfectamente
+     marginLeft: -47.5,    // ← La mitad del ancho para centrar perfectamente
+     zIndex: 1,
+   },
+  
+  profileGradientBorder: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    padding: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  icon: {
-    fontSize: 28,
-  },
-  titleTextContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#f1f5f9',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#94a3b8',
-  },
-  coordinatesContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  coordinateCard: {
-    flex: 1,
-    backgroundColor: '#1e293b',
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  coordinateLabel: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginBottom: 6,
-    fontWeight: '500',
-  },
-  coordinateValue: {
-    fontSize: 16,
-    color: '#f1f5f9',
-    fontWeight: '600',
-    fontFamily: 'monospace',
-  },
-  infoSection: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-    gap: 16,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  infoIcon: {
-    fontSize: 24,
-    width: 32,
-  },
-  infoTextContainer: {
-    flex: 1,
-  },
-  infoLabel: {
-    fontSize: 13,
-    color: '#94a3b8',
-    marginBottom: 2,
-  },
-  infoValue: {
-    fontSize: 15,
-    color: '#f1f5f9',
-    fontWeight: '600',
-  },
-  actionsContainer: {
-    gap: 16,
-    marginBottom: 20,
-  },
-  primaryButton: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#8b5cf6',
+    zIndex: 2,             // ← Por encima del círculo de fondo
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
   },
-  buttonGradient: {
-    paddingVertical: 18,
+  profileWhiteBorder: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: '#fff',
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+  },
+  
+  // Tarjeta principal
+  mainCard: {
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 24,
+    overflow: 'visible',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+   cardGradient: {
+     padding: 24,
+     paddingTop: 32,
+     paddingBottom: 28,
+     borderRadius: 24,
+     // backgroundColor se aplica dinámicamente con primaryColor
+   },
+  
+  // Espacio para la foto que sobresale
+  profileSpacing: {
+    height: 32,            // ← Ajustado
+    marginBottom: 12,
+  },
+
+  profileNameContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
   },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 17,
+  profileName: {
+    fontSize: 20,
     fontWeight: '700',
+    color: '#fff',
+    textAlign: 'center',
   },
-  secondaryButtons: {
+  waveIcon: {
+    marginLeft: 8,
+  },
+  profileSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  messagesInfo: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 10,
+    fontSize: 14,
+  },
+  messageTypeContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  messageTypeText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  labelText: {
+    fontSize: 14,
+    color: 'white',
+    marginLeft: 4,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  errorText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+  },
+  balanceContainer: {
     flexDirection: 'row',
     gap: 12,
+    marginBottom: 20,
   },
-  secondaryButton: {
+  balanceCard: {
     flex: 1,
-    backgroundColor: '#1e293b',
-    paddingVertical: 14,
-    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#334155',
-    gap: 4,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  secondaryButtonIcon: {
+  balanceAmount: {
     fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginTop: 8,
   },
-  secondaryButtonText: {
-    color: '#cbd5e1',
-    fontSize: 12,
-    fontWeight: '600',
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 16,
+    padding: 16,
+    gap: 8,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 60,
-    right: 20,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionButtonIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f1f5f9',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
+  },
+  actionButtonLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#475569',
+    textAlign: 'center',
+  },
+
+  // Sección de Mensajes
+  messagesSection: {
+    marginHorizontal: 24,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  closeButtonText: {
-    color: '#f1f5f9',
-    fontSize: 20,
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#94a3b8',
+    letterSpacing: 0.5,
+    marginBottom: 16,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  menuItemIconContainer: {
+    width: 28,
+    alignItems: 'center',
+  },
+  menuItemLabel: {
+    fontSize: 15,
     fontWeight: '600',
+    color: '#1e293b',
+  },
+
+  // Estilos para mensajes
+  messageItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  messageItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  messageIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  messageContent: {
+    flex: 1,
+  },
+  messageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  messageUsername: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  messageDateTime: {
+    fontSize: 11,
+    color: '#94a3b8',
+  },
+  messageText: {
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 18,
+  },
+  messageUrl: {
+    fontSize: 11,
+    color: '#64748b',
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  messageReactions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  reactionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    gap: 2,
+  },
+  reactionEmoji: {
+    fontSize: 12,
+  },
+  reactionCount: {
+    fontSize: 10,
+    color: '#64748b',
+    fontWeight: '600',
+  },
+
+  // Botón cerrar
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });

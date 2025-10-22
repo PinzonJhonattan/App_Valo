@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ViewShot from 'react-native-view-shot';
+import { AnimatedWaves } from './AnimatedWaves';
 import { CustomMarker } from './custom-marker';
 import dataMocks from './data/data-mocks.json';
 import { useLocation } from './hooks/useLocation';
@@ -15,15 +16,14 @@ const Map = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
 
-  // Memoizar los marcadores para evitar re-renderizados innecesarios
   const markers = useMemo(() => dataMocks, []);
 
   const [markerIcons, setMarkerIcons] = useState<{ [key: string]: any }>({});
   const viewShotRefs = useRef<{ [key: string]: ViewShot | null }>({});
 
   // Función para abrir el modal con el marcador seleccionado
-  const handleMarkerPress = useCallback((marker: any) => {
-    setSelectedMarker(marker);
+  const handleMarkerPress = useCallback((messageUuid: string) => {
+    setSelectedMarker(messageUuid);
     setModalVisible(true);
   }, []);
 
@@ -53,19 +53,19 @@ const Map = () => {
   }, []);
 
   const renderHiddenMarkers = useCallback(() => {
-    return markers.map((marker) => (
+    return markers.map((marker, index) => (
       <ViewShot
-        key={`hidden-${marker.id}`}
+        key={`hidden-${index}-${marker.messageUuid}`}
         ref={(ref) => {
-          viewShotRefs.current[marker.id] = ref;
+          viewShotRefs.current[marker.messageUuid] = ref;
         }}
         style={styles.hiddenMarker}
         options={{ format: 'png', quality: 1 }}
       >
         <CustomMarker 
-          imageUrl={marker.imageUrl} 
+          imageUrl={'https://i.pravatar.cc/150?img=14'} 
           size={50}
-          onImageLoad={() => handleImageLoad(marker.id)}
+          onImageLoad={() => handleImageLoad(marker.messageUuid)}
         />
       </ViewShot>
     ));
@@ -123,6 +123,8 @@ const Map = () => {
         {renderHiddenMarkers()}
       </View>
 
+      <AnimatedWaves />
+
       <MapView 
         ref={mapRef}
         style={styles.map}
@@ -144,67 +146,28 @@ const Map = () => {
         rotateEnabled={false}
         initialRegion={initialRegion}
       >
-        {/* Marcador personalizado en tu ubicación */}
-        {location && (
-          <>
-            <Marker
-              coordinate={location}
-              anchor={{ x: 0.5, y: 0.5 }}
-              tracksViewChanges={false}
-            >
-              <View style={styles.userLocationMarker}>
-                <View style={styles.userLocationDot} />
-              </View>
-            </Marker>
-            
-            {/* Círculo de precisión */}
-            <Circle
-              center={location}
-              radius={50}
-              fillColor="rgba(66, 165, 245, 0.2)"
-              strokeColor="rgba(66, 165, 245, 0.5)"
-              strokeWidth={2}
-            />
-          </>
-        )}
 
         {/* Tus marcadores personalizados */}
-        {markers.map((marker) => {
-          if (!markerIcons[marker.id]) {
-            return (
-              <Marker
-                key={marker.id}
-                coordinate={marker.coordinate}
-                anchor={{ x: 0.5, y: 0.5 }}
-                tracksViewChanges={true}
-                onPress={() => handleMarkerPress(marker)}
-              >
-                <CustomMarker 
-                  imageUrl={marker.imageUrl} 
-                  size={50}
-                  onImageLoad={() => handleImageLoad(marker.id)}
-                />
-              </Marker>
-            );
-          }
+        {markers.map((marker, index) => {
           
           return (
             <Marker
-              key={marker.id}
-              coordinate={marker.coordinate}
-              icon={markerIcons[marker.id]}
+              key={`marker-${index}-${marker.messageUuid}`}
+              coordinate={marker.location}
+              icon={markerIcons[marker.messageUuid]}
               anchor={{ x: 0.5, y: 0.5 }}
               tracksViewChanges={false}
-              onPress={() => handleMarkerPress(marker)}
+              onPress={() => handleMarkerPress(marker.messageUuid)}
             />
           );
+          
         })}
       </MapView>
 
       {/* Modal para mostrar información del marcador */}
       <MarkerModal
         visible={modalVisible}
-        marker={selectedMarker}
+        messageUuid={selectedMarker}
         onClose={handleCloseModal}
       />
     </View>

@@ -8,91 +8,91 @@ import { Platform } from 'react-native';
 export const Colors = {
   light: {
     // Colores principales
-    primary: '#2D2D2D',        // Negro del logo y botones
-    secondary: '#E8F1F0',      // Verde agua claro de fondo
-    accent: '#FF6B6B',         // Rojo/coral de los enlaces
+    primary: '#4299E1',       // Azul profesional (Tailwind Blue 500)
+    secondary: '#E2E8F0',     // Gris claro (Tailwind Gray 200)
+    accent: '#E53E3E',       // Rojo para acentos/errores (Tailwind Red 600)
     
     // Colores de estado
-    success: '#4CAF50',
-    warning: '#FF9800',
-    error: '#FF6B6B',          // Rojo de "Inicia sesión"
-    info: '#2196F3',
+    success: '#38A169',       // Verde (Tailwind Green 600)
+    warning: '#D69E2E',       // Naranja (Tailwind Orange 600)
+    error: '#E53E3E',         // Rojo (Tailwind Red 600)
+    info: '#4299E1',           // Azul (Usamos el primario)
     
     // Colores de texto
-    text: '#2D2D2D',           // Negro principal
-    textSecondary: '#6B6B6B',  // Gris del texto secundario
-    textTertiary: '#9E9E9E',   // Gris claro de placeholders
+    text: '#1A202C',         // Gris carbón (Casi negro - Tailwind Gray 900)
+    textSecondary: '#4A5568', // Gris oscuro (Tailwind Gray 700)
+    textTertiary: '#718096',  // Gris medio (Tailwind Gray 500)
     
     // Colores de fondo
-    background: '#E8F1F0',     // Verde agua claro principal
-    backgroundSecondary: '#FFFFFF',  // Blanco de inputs y cards
-    backgroundTertiary: '#F5F5F5',
+    background: '#F7FAFC',         // Blanco hueso (Tailwind Gray 50)
+    backgroundSecondary: '#FFFFFF', // Blanco puro (para tarjetas/superficies)
+    backgroundTertiary: '#EDF2F7',  // Gris muy claro (Tailwind Gray 100)
     
     // Colores de bordes
-    border: '#2D2D2D',         // Negro de los bordes de inputs
-    borderLight: '#D1D1D1',
+    border: '#CBD5E0',       // Gris claro (Tailwind Gray 400)
+    borderLight: '#E2E8F0',     // Gris muy claro (Tailwind Gray 300)
     
     // Colores de componentes
-    card: '#FFFFFF',
-    cardShadow: 'rgba(0, 0, 0, 0.08)',
+    card: '#FFFFFF',           // Blanco puro
+    cardShadow: 'rgba(0, 0, 0, 0.08)', // Sombra sutil para light mode
     
     // Colores de inputs
     inputBackground: '#FFFFFF',
-    inputBorder: '#2D2D2D',
-    inputPlaceholder: '#9E9E9E',
+    inputBorder: '#CBD5E0',
+    inputPlaceholder: '#718096',
     
     // Botones
-    buttonPrimary: '#2D2D2D',
-    buttonPrimaryText: '#FFFFFF',
+    buttonPrimary: '#4299E1',
+    buttonPrimaryText: '#FFFFFF', // Texto blanco para buen contraste
     
     // Colores de tabs
-    tint: '#2D2D2D',
-    tabIconDefault: '#9E9E9E',
-    tabIconSelected: '#2D2D2D',
-},
+    tint: '#4299E1',
+    tabIconDefault: '#718096',
+    tabIconSelected: '#4299E1',
+  },
 dark: {
   // Colores principales
-  primary: '#7FB3A0',        // Verde sage suave
-  secondary: '#1C2B26',      // Verde casi negro
-  accent: '#E57373',         // Coral rojizo para acentos
+  primary: '#4299E1',       // Azul profesional (Tailwind Blue 500)
+  secondary: '#1E1E1E',     // Gris oscuro (para fondos secundarios)
+  accent: '#E53E3E',       // Rojo para acentos/errores (Tailwind Red 600)
   
   // Colores de estado
-  success: '#66BB6A',
-  warning: '#FFB74D',
-  error: '#E57373',
-  info: '#64B5F6',
+  success: '#48BB78',       // Verde (Tailwind Green 500)
+  warning: '#F6AD55',       // Naranja (Tailwind Orange 400)
+  error: '#E53E3E',         // Rojo (Tailwind Red 600)
+  info: '#4299E1',           // Azul (Usamos el primario)
   
   // Colores de texto
-  text: '#E8F0ED',           // Blanco verdoso
-  textSecondary: '#8BA399',  // Verde gris
-  textTertiary: '#5A6B63',   // Verde gris oscuro
+  text: '#F5F5F5',         // Blanco (ligeramente apagado)
+  textSecondary: '#AAAAAA', // Gris medio (para texto secundario)
+  textTertiary: '#757575',  // Gris oscuro (para placeholders/deshabilitado)
   
   // Colores de fondo
-  background: '#0F1613',     // Verde negruzco (casi negro puro)
-  backgroundSecondary: '#1C2B26',  // Verde muy oscuro
-  backgroundTertiary: '#27342E',   // Verde oscuro
+  background: '#121212',         // Gris casi negro (Material Design standard)
+  backgroundSecondary: '#1E1E1E', // Gris oscuro (para tarjetas/superficies)
+  backgroundTertiary: '#2A2A2A',  // Gris medio-oscuro (para inputs/hovers)
   
   // Colores de bordes
-  border: '#3A4A42',
-  borderLight: '#4A5A52',
+  border: '#3A3A3A',
+  borderLight: '#4A4A4A',
   
   // Colores de componentes
-  card: '#1C2B26',
+  card: '#1E1E1E',           // Igual a backgroundSecondary
   cardShadow: 'rgba(0, 0, 0, 0.5)',
   
   // Colores de inputs
-  inputBackground: '#27342E',
-  inputBorder: '#3A4A42',
-  inputPlaceholder: '#5A6B63',
+  inputBackground: '#2A2A2A',
+  inputBorder: '#3A3A3A',
+  inputPlaceholder: '#757575',
   
   // Botones
-  buttonPrimary: '#7FB3A0',
-  buttonPrimaryText: '#0F1613',
+  buttonPrimary: '#4299E1',
+  buttonPrimaryText: '#FFFFFF', // Texto blanco para mejor contraste
   
   // Colores de tabs
-  tint: '#7FB3A0',
-  tabIconDefault: '#5A6B63',
-  tabIconSelected: '#7FB3A0',
+  tint: '#4299E1',
+  tabIconDefault: '#757575',
+  tabIconSelected: '#4299E1',
 }
 };
 

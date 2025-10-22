@@ -1,0 +1,21 @@
+[
+    {
+    "messageContent": "Hola, mensaje de prueba",
+    "messageType": "TEXT",
+    "messageDate": "2025-09-11",
+    "messageTime": "19:14:58.827",
+    "dislikes": 0,
+    "messageUuid": "c8f13763-985f-4ee0-be3a-9c848a647dbd",
+    "zone": "America/Bogota",
+    "anonymous": false,
+    "deleted": false,
+    "reactionsCount": [],
+    "usersWhoReacted": [],
+    "creator": {
+        "username": "Stiven Villarraga",
+        "picture": "https://i.pravatar.cc/150?img=15",
+        "sub": "719be510-1041-7026-44ea-c3ac7166938d",
+        "level": 0
+    }
+    }
+]

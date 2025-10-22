@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef } from 'react';
-import { Animated, Image, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 
 interface CustomMarkerProps {
   imageUrl: string;
@@ -9,64 +9,9 @@ interface CustomMarkerProps {
 }
 
 export function CustomMarker({ imageUrl, size = 50, onImageLoad }: CustomMarkerProps) {
-  // Animaciones para las 3 ondas
-  const wave1 = useRef(new Animated.Value(0)).current;
-  const wave2 = useRef(new Animated.Value(0)).current;
-  const wave3 = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    // Función para crear la animación de cada onda
-    const createWaveAnimation = (animValue: Animated.Value, delay: number) => {
-      return Animated.loop(
-        Animated.sequence([
-          Animated.delay(delay),
-          Animated.timing(animValue, {
-            toValue: 1,
-            duration: 2000, // 2 segundos para expandirse
-            useNativeDriver: true,
-          }),
-          Animated.timing(animValue, {
-            toValue: 0,
-            duration: 0, // Reset instantáneo
-            useNativeDriver: true,
-          }),
-        ])
-      );
-    };
 
-    // Iniciar las 3 ondas con diferentes delays
-    const wave1Animation = createWaveAnimation(wave1, 0);
-    const wave2Animation = createWaveAnimation(wave2, 666);
-    const wave3Animation = createWaveAnimation(wave3, 1333);
-
-    wave1Animation.start();
-    wave2Animation.start();
-    wave3Animation.start();
-
-    return () => {
-      wave1Animation.stop();
-      wave2Animation.stop();
-      wave3Animation.stop();
-    };
-  }, []);
-
-  // Estilo para cada onda (escala y opacidad)
-  const createWaveStyle = (animValue: Animated.Value) => ({
-    transform: [
-      {
-        scale: animValue.interpolate({
-          inputRange: [0, 1],
-          outputRange: [1, 2.5], // Crece hasta 2.5x
-        }),
-      },
-    ],
-    opacity: animValue.interpolate({
-      inputRange: [0, 0.5, 1],
-      outputRange: [0.5, 0.25, 0], // Se desvanece mientras crece
-    }),
-  });
-
-  const containerSize = size * 3; // Espacio para las ondas expandidas
+  const containerSize = size * 3; 
 
   return (
     <View
@@ -77,40 +22,6 @@ export function CustomMarker({ imageUrl, size = 50, onImageLoad }: CustomMarkerP
         alignItems: 'center',
       }}
     >
-      {/* 3 Ondas animadas que se expanden */}
-      {/* <Animated.View
-        style={[
-          styles.wave,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-          },
-          createWaveStyle(wave1),
-        ]}
-      /> */}
-      {/* <Animated.View
-        style={[
-          styles.wave,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-          },
-          createWaveStyle(wave2),
-        ]}
-      /> */}
-      {/* <Animated.View
-        style={[
-          styles.wave,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-          },
-          createWaveStyle(wave3),
-        ]}
-      /> */}
 
       {/* Marcador principal (círculo con imagen) */}
       <View style={{ width: size, height: size, position: 'absolute' }}>
@@ -153,12 +64,6 @@ export function CustomMarker({ imageUrl, size = 50, onImageLoad }: CustomMarkerP
 }
 
 const styles = StyleSheet.create({
- /*  wave: {
-    position: 'absolute',
-    backgroundColor: 'rgba(250, 126, 30, 0.2)',
-    borderWidth: 2,
-    borderColor: 'rgba(250, 126, 30, 0.4)',
-  }, */
   gradientBorder: {
     justifyContent: 'center',
     alignItems: 'center',

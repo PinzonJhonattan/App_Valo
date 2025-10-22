@@ -1,200 +1,21 @@
 [
-    {
-      "id": "1",
-      "coordinate": {
-        "latitude": 40.4168,
-        "longitude": -3.7038
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=1",
-      "title": "Madrid"
+  {
+    "messageType": "TEXT",
+    "messageUserSender": "719be510-1041-7026-44ea-c3ac7166938d",
+    "groupId": null,
+    "location": {
+      "latitude": 4.155,
+      "longitude": -73.628
     },
-    {
-      "id": "2",
-      "coordinate": {
-        "latitude": 41.3851,
-        "longitude": 2.1734
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=2",
-      "title": "Barcelona"
-    },
-    {
-      "id": "3",
-      "coordinate": {
-        "latitude": 4.1255715,
-        "longitude": -73.6387064
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=3",
-      "title": "Viva Centro Comercial"
-    },
-    {
-      "id": "4",
-      "coordinate": {
-        "latitude": 4.1346594,
-        "longitude": -73.6404598
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=4",
-      "title": "Primavera Urbana"
-    },
-    {
-      "id": "5",
-      "coordinate": {
-        "latitude": 4.1508,
-        "longitude": -73.6402
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=5",
-      "title": "Parque Los Fundadores"
-    },
-    {
-      "id": "6",
-      "coordinate": {
-        "latitude": 4.0950,
-        "longitude": -73.6548
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=6",
-      "title": "Bioparque Los Ocarros"
-    },
-    {
-      "id": "7",
-      "coordinate": {
-        "latitude": 4.0682,
-        "longitude": -73.6415
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=7",
-      "title": "Mirador de Buenavista"
-    },
-    {
-      "id": "8",
-      "coordinate": {
-        "latitude": 4.1420,
-        "longitude": -73.6261
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=8",
-      "title": "Catedral de Villavicencio"
-    },
-    {
-      "id": "9",
-      "coordinate": {
-        "latitude": 4.1418,
-        "longitude": -73.6315
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=9",
-      "title": "Parque Central (Parque de La Cruz)"
-    },
-    {
-      "id": "10",
-      "coordinate": {
-        "latitude": 4.1205,
-        "longitude": -73.6395
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=10",
-      "title": "Terminal de Transportes"
-    },
-    {
-      "id": "11",
-      "coordinate": {
-        "latitude": 4.1465,
-        "longitude": -73.6340
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=11",
-      "title": "Gobernación del Meta"
-    },
-    {
-      "id": "12",
-      "coordinate": {
-        "latitude": 4.1500,
-        "longitude": -73.6245
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=12",
-      "title": "Unicentro Villavicencio"
-    },
-    {
-      "id": "13",
-      "coordinate": {
-        "latitude": 4.1160,
-        "longitude": -73.6190
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=13",
-      "title": "Cancha del 12 de Octubre"
-    },
-    {
-      "id": "14",
-      "coordinate": {
-        "latitude": 4.1030,
-        "longitude": -73.6265
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=14",
-      "title": "Avenida 40 (Zona Comercial)"
-    },
-    {
-      "id": "15",
-      "coordinate": {
-        "latitude": 4.1285,
-        "longitude": -73.6180
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=15",
-      "title": "Clínica Meta"
-    },
-    {
-      "id": "16",
-      "coordinate": {
-        "latitude": 4.1570,
-        "longitude": -73.6450
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=16",
-      "title": "Universidad Cooperativa de Colombia (UCC)"
-    },
-    {
-      "id": "17",
-      "coordinate": {
-        "latitude": 4.1180,
-        "longitude": -73.6550
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=17",
-      "title": "Colegio de la Sabiduría"
-    },
-    {
-      "id": "18",
-      "coordinate": {
-        "latitude": 4.0750,
-        "longitude": -73.6250
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=18",
-      "title": "Hotel Campanario"
-    },
-    {
-      "id": "19",
-      "coordinate": {
-        "latitude": 4.0900,
-        "longitude": -73.6390
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=19",
-      "title": "Barrio La Grama"
-    },
-    {
-      "id": "20",
-      "coordinate": {
-        "latitude": 4.1550,
-        "longitude": -73.6280
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=20",
-      "title": "Estadio Macal"
-    },
-    {
-      "id": "21",
-      "coordinate": {
-        "latitude": 4.1050,
-        "longitude": -73.6450
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=21",
-      "title": "Centro Comercial Llanocentro"
-    },
-    {
-      "id": "22",
-      "coordinate": {
-        "latitude": 4.1100,
-        "longitude": -73.6300
-      },
-      "imageUrl": "https://i.pravatar.cc/150?img=22",
-      "title": "Mercado Público (Plaza de Mercado)"
-    }
-  ]
+    "messageDate": "2025-09-11",
+    "messageTime": "19:14:58.827",
+    "distanceToRadiusToDiscover": 50.0,
+    "disappearTime": "2025-10-11T19:14:58.827",
+    "messageUuid": "c8f13763-985f-4ee0-be3a-9c848a647dbd",
+    "zone": "America/Bogota",
+    "anonymous": false,
+    "reactionsCount": [],
+    "usersWhoReacted": [],
+    "deleted": false
+  }
+]
