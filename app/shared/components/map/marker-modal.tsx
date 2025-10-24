@@ -1,4 +1,4 @@
-import { AntDesign, FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -14,8 +14,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '../../hooks/use-theme-color';
+import { MessageAudio } from './components/message-audio';
+import { MessagePostit } from './components/message-postit';
 import mockMessageData from './data/data-mcoks-message.json';
 
 
@@ -48,10 +49,13 @@ interface MarkerModalProps {
 const { height: screenHeight } = Dimensions.get('window');
 
 export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps) {
-  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const pan = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const isScrolling = useRef(false);
+  
+  //  Animación para deslizar desde abajo
+  const translateYAnim = useRef(new Animated.Value(screenHeight)).current;
+  const backgroundOpacityAnim = useRef(new Animated.Value(0)).current;
   
   // Obtener el color primario del tema
   const primaryColor = useThemeColor({}, 'secondary');
@@ -77,28 +81,53 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
 
   useEffect(() => {
     if (visible) {
-      pan.setValue(0);
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 65,
-        friction: 11,
-      }).start();
+      //  Animación de apertura - sube desde abajo rápido
+      translateYAnim.setValue(screenHeight);
+      backgroundOpacityAnim.setValue(0);
+      
+      Animated.parallel([
+        Animated.timing(translateYAnim, {
+          toValue: 0,
+          duration: 300, // Rápido y fluido
+          useNativeDriver: true,
+        }),
+        Animated.timing(backgroundOpacityAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
     } else {
-      Animated.timing(slideAnim, {
+      // ✅ Animación de cierre - baja rápido
+      Animated.parallel([
+        Animated.timing(translateYAnim, {
+          toValue: screenHeight,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backgroundOpacityAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [visible, translateYAnim, backgroundOpacityAnim]);
+
+  const handleClose = () => {
+    //  Animación de cierre - baja rápido
+    Animated.parallel([
+      Animated.timing(translateYAnim, {
         toValue: screenHeight,
         duration: 250,
         useNativeDriver: true,
-      }).start();
-    }
-  }, [visible, pan, slideAnim]);
-
-  const handleClose = () => {
-    Animated.timing(slideAnim, {
-      toValue: screenHeight,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
+      }),
+      Animated.timing(backgroundOpacityAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
       pan.setValue(0);
       onClose();
     });
@@ -145,339 +174,164 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
       onRequestClose={handleClose}
       statusBarTranslucent
     >
-      <View style={styles.overlay}>
+      {/* Overlay animado con opacidad */}
+      <Animated.View 
+        style={[
+          styles.overlay,
+          {
+            opacity: backgroundOpacityAnim,
+          }
+        ]}
+      >
         <TouchableOpacity 
           style={styles.backdrop} 
           activeOpacity={1} 
           onPress={handleClose}
         />
-        
+
+        {/* Contenedor centrado con animación de slide desde abajo */}
         <Animated.View 
           style={[
-            styles.modalContainer,
-            { 
-              transform: [
-                { 
-                  translateY: Animated.add(
-                    slideAnim,
-                    pan.interpolate({
-                      inputRange: [0, screenHeight],
-                      outputRange: [0, screenHeight],
-                      extrapolate: 'clamp',
-                    })
-                  )
-                }
-              ] 
+            styles.centeredContainer,
+            {
+              transform: [{ translateY: translateYAnim }],
             }
           ]}
         >
-          <SafeAreaView style={styles.safeArea}>
-            {/* Barra de arrastre */}
-            <View 
-              style={styles.dragIndicatorContainer}
-              {...panResponder.panHandlers}
+          {/* FOTO DE PERFIL SALIENDO CON CÍRCULO DE FONDO */}
+          <View style={styles.profilePhotoContainer}>
+            {/* Círculo de fondo del color de la tarjeta */}
+            <View style={[styles.profileBackgroundCircle, { backgroundColor: primaryColor }]} />
+          
+            {/* Foto con borde Instagram */}
+            <LinearGradient
+              colors={['#feda75', '#fa7e1e', '#d62976', '#962fbf', '#4f5bd5']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.profileGradientBorder}
             >
-              <View style={styles.dragIndicator} />
-            </View>
-
-            {/* Contenido con scroll */}
-            <ScrollView 
-              ref={scrollViewRef}
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              bounces={true}
-              scrollEventThrottle={16}
-              onScrollBeginDrag={() => { isScrolling.current = true; }}
-              onScrollEndDrag={() => { isScrolling.current = false; }}
-              onMomentumScrollBegin={() => { isScrolling.current = true; }}
-              onMomentumScrollEnd={() => { isScrolling.current = false; }}
-            >
-               {/* ✅ FOTO DE PERFIL SALIENDO CON CÍRCULO DE FONDO */}
-               <View style={styles.profilePhotoContainer}>
-                 {/* Círculo de fondo del color de la tarjeta */}
-                 <View style={[styles.profileBackgroundCircle, { backgroundColor: primaryColor }]} />
-                
-                {/* Foto con borde Instagram */}
-                <LinearGradient
-                  colors={['#feda75', '#fa7e1e', '#d62976', '#962fbf', '#4f5bd5']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.profileGradientBorder}
-                >
-                  <View style={styles.profileWhiteBorder}>
-                    <Image
-                      source={{ uri: messageData?.creator.picture || 'https://i.pravatar.cc/150?img=1' }}
-                      style={styles.profileImage}
-                    />
-                  </View>
-                </LinearGradient>
+              <View style={styles.profileWhiteBorder}>
+                <Image
+                  source={{ uri: messageData?.creator.picture || ''}}
+                  style={styles.profileImage}
+                />
               </View>
+            </LinearGradient>
+          </View>
 
-               {/* Tarjeta Principal */}
-               <View style={styles.mainCard}>
-                 <View style={[styles.cardGradient, { backgroundColor: primaryColor }]}>
-                  {/* Espacio para la foto que sobresale */}
-                  <View style={styles.profileSpacing} />
+          {/* Tarjeta Principal */}
+          <View style={styles.mainCard}>
+            <View style={[styles.cardGradient, { backgroundColor: primaryColor }]}>
+              {/* Espacio para la foto que sobresale */}
+              <View style={styles.profileSpacing} />
 
-                  {/* Loading o contenido del mensaje */}
-                  {loading ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color="white" />
-                      <Text style={styles.loadingText}>Cargando mensaje...</Text>
-                    </View>
-                  ) : messageData ? (
-                    <>
-                      {/* Nombre del usuario */}
-                      <View style={styles.profileNameContainer}>
-                        <Text style={styles.profileName}>
-                          {messageData.anonymous ? 'Usuario anónimo' : messageData.creator.username}
-                        </Text>
-                        <Ionicons name="hand-left" size={20} color="white" style={styles.waveIcon} />
-                      </View>
-                      
-                      {/* Fecha y hora */}
-                      <Text style={styles.profileSubtitle}>
-                        {new Date(`${messageData.messageDate}T${messageData.messageTime}`).toLocaleString('es-ES')}
-                      </Text>
-
-                      {/* Tipo de mensaje */}
-                      <View style={styles.messageTypeContainer}>
-                        <Text style={styles.messageTypeText}>
-                        {messageData.messageType === 'TEXT' ? (
-                          <>
-                            <Ionicons name="create-outline" size={24} color="white" />
-                            <Text style={styles.labelText}> Post it</Text>
-                          </>
-                        ) :
-                           messageData.messageType === 'AUDIO' ? (
-                            <>
-                              <Ionicons name="mic-outline" size={24} color="white" />
-                              <Text style={styles.labelText}> Audio</Text>
-                            </>
-                          ) :
-                           messageData.messageType === 'DRAW' ? (
-                            <>
-                              <Ionicons name="create-outline" size={24} color="white" />
-                              <Text style={styles.labelText}> Dibujo</Text>
-                            </>
-                          ) :
-                           'Mensaje'} 
-                        </Text>
-                      </View>
-                    </>
-                  ) : (
-                    <View style={styles.errorContainer}>
-                      <Text style={styles.errorText}>No se pudo cargar el mensaje</Text>
-                    </View>
-                  )}
-
-                  {/* Balance Cards */}
-                  <View style={styles.balanceContainer}>
-                    <View style={styles.balanceCard}>
-                      <Ionicons name="stats-chart" size={24} color="white" />
-                      <Text style={styles.balanceAmount}>$3,214</Text>
-                    </View>
-                    <View style={styles.balanceCard}>
-                      <Ionicons name="location" size={24} color="white" />
-                      <Text style={styles.balanceAmount}>$1,640</Text>
-                    </View>
-                  </View>
-
-                  {/* Botones de acción */}
-                  <View style={styles.actionButtons}>
-                    <ActionButton icon="arrow-up" iconFamily="Ionicons" label="Top up" />
-                    <ActionButton icon="card" iconFamily="Ionicons" label="My Referral" />
-                    <ActionButton icon="send" iconFamily="MaterialIcons" label="Send" />
-                    <ActionButton icon="dollar" iconFamily="FontAwesome" label="Pay" />
-                  </View>
+              {/* Loading o contenido del mensaje */}
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="white" />
+                  <Text style={styles.loadingText}>Cargando mensaje...</Text>
                 </View>
-              </View>
+              ) : messageData ? (
+                <>
+                  {/* Nombre del usuario */}
+                  <View style={styles.profileNameContainer}>
+                    <Text style={styles.profileName}>
+                      {messageData.anonymous ? 'Usuario anónimo' : messageData.creator.username}
+                    </Text>
+                  </View>
+                  
+                  {/* Fecha y hora */}
+                  <Text style={styles.profileSubtitle}>
+                    {new Date(`${messageData.messageDate}T${messageData.messageTime}`).toLocaleString('es-ES')}
+                  </Text>
 
-              {/* Sección de CONTENIDO DEL MENSAJE */}
-              {messageData && (
-                <View style={styles.messagesSection}>
-                  <Text style={styles.sectionTitle}>CONTENIDO</Text>
-                  <MessageItem message={messageData} />
+                  {/* Tipo de mensaje */}
+                  <View style={styles.messageTypeContainer}>
+                    <Text style={styles.messageTypeText}>
+                    {messageData.messageType === 'TEXT' ? (
+                      <>
+                        <Ionicons name="create-outline" size={15} color="white" />
+                        <Text style={styles.labelText}> Post it</Text>
+                      </>
+                    ) :
+                      messageData.messageType === 'AUDIO' ? (
+                        <>
+                          <Ionicons name="mic-outline" size={15} color="white" />
+                          <Text style={styles.labelText}> Audio</Text>
+                        </>
+                      ) :
+                      messageData.messageType === 'DRAW' ? (
+                        <>
+                          <Ionicons name="pencil-outline" size={15} color="white" />
+                          <Text style={styles.labelText}> Draw</Text>
+                        </>
+                      ) :
+                      'Mensaje'} 
+                    </Text>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>No se pudo cargar el mensaje</Text>
                 </View>
               )}
 
-            </ScrollView>
-
-            {/* Botón cerrar */}
-            <TouchableOpacity 
-              style={styles.closeButton} 
-              onPress={handleClose}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="close" size={20} color="#64748b" />
-            </TouchableOpacity>
-          </SafeAreaView>
+              {/* Sección de CONTENIDO DEL MENSAJE */}
+              {messageData?.messageType === 'TEXT' && (
+                <View style={styles.postitContainer}>
+                  <MessagePostit message={messageData.messageContent} />
+                </View>
+              )}
+              {messageData?.messageType === 'AUDIO' && (
+                <View style={styles.audioContainer}>
+                  <MessageAudio />
+                </View>
+              )}
+            </View>
+          </View>
         </Animated.View>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
 
-// Componente de botón de acción
-function ActionButton({ icon, iconFamily = "Ionicons", label }: { icon: string; iconFamily?: string; label: string }) {
-  const IconComponent = iconFamily === "MaterialIcons" ? MaterialIcons : 
-                       iconFamily === "FontAwesome" ? FontAwesome : 
-                       iconFamily === "AntDesign" ? AntDesign : Ionicons;
-
-  return (
-    <TouchableOpacity style={styles.actionButton}>
-      <View style={styles.actionButtonIcon}>
-        <IconComponent name={icon as any} size={20} color="#475569" />
-      </View>
-      <Text style={styles.actionButtonLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
 
 
-// Componente de item de mensaje
-function MessageItem({ message }: { message: MessageData }) {
-  const getMessageIcon = () => {
-    switch (message.messageType) {
-      case 'TEXT': return 'chatbubble-outline';
-      case 'AUDIO': return 'mic-outline';
-      case 'DRAW': return 'create-outline';
-      default: return 'chatbubble-outline';
-    }
-  };
-
-  const getMessageTypeColor = () => {
-    switch (message.messageType) {
-      case 'TEXT': return '#4299E1';
-      case 'AUDIO': return '#E53E3E';
-      case 'DRAW': return '#38A169';
-      default: return '#64748b';
-    }
-  };
-
-  const formatDateTime = (date: string, time: string) => {
-    const dateObj = new Date(`${date}T${time}`);
-    return dateObj.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  return (
-    <TouchableOpacity style={styles.messageItem}>
-      <View style={styles.messageItemLeft}>
-        <View style={[styles.messageIconContainer, { backgroundColor: getMessageTypeColor() + '20' }]}>
-          <Ionicons name={getMessageIcon() as any} size={16} color={getMessageTypeColor()} />
-        </View>
-        <View style={styles.messageContent}>
-          <View style={styles.messageHeader}>
-            <Text style={styles.messageUsername}>
-              {message.anonymous ? 'Usuario anónimo' : message.creator.username}
-            </Text>
-            <Text style={styles.messageDateTime}>
-              {formatDateTime(message.messageDate, message.messageTime)}
-            </Text>
-          </View>
-          <Text style={styles.messageText} numberOfLines={2}>
-            {message.messageType === 'AUDIO' ? '🎵 Audio' : 
-             message.messageType === 'DRAW' ? '🎨 Dibujo' : 
-             message.messageContent}
-          </Text>
-          {message.messageType === 'AUDIO' && (
-            <Text style={styles.messageUrl} numberOfLines={1}>
-              {message.messageContent}
-            </Text>
-          )}
-        </View>
-      </View>
-      <View style={styles.messageReactions}>
-        {message.reactionsCount.map((reaction, index) => (
-          <View key={index} style={styles.reactionItem}>
-            <Text style={styles.reactionEmoji}>
-              {reaction.reaction === 'heart' ? '❤️' :
-               reaction.reaction === 'laugh' ? '😂' :
-               reaction.reaction === 'thumbs_up' ? '👍' : '👍'}
-            </Text>
-            <Text style={styles.reactionCount}>{reaction.count}</Text>
-          </View>
-        ))}
-      </View>
-    </TouchableOpacity>
-  );
-}
 
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)', // ✅ Fondo más opaco (era 0.5)
+    justifyContent: 'center', // ✅ Centrado vertical
+    alignItems: 'center', // ✅ Centrado horizontal
   },
   backdrop: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject, // ✅ Cubre toda la pantalla
   },
-  modalContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#f5f7fa',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    height: screenHeight * 0.90,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 20,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  dragIndicatorContainer: {
+  
+  // ✅ NUEVO: Contenedor centrado para la tarjeta
+  centeredContainer: {
+    width: '100%',
     alignItems: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#f5f7fa',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-  },
-  dragIndicator: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#cbd5e1',
-    borderRadius: 2,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
   },
 
   // ✅ FOTO DE PERFIL SALIENDO CON CÍRCULO DE FONDO
   profilePhotoContainer: {
     alignItems: 'center',
-    marginTop: 20,         // ← Más margen arriba para que no se tape
-    marginBottom: -52,     // ← Se superpone con la tarjeta
+    justifyContent: 'center',
+    marginBottom: -40, // ← Hace que la foto se superponga con la tarjeta
     zIndex: 10,
-    position: 'relative',
   },
-  
-   // ✅ CÍRCULO DE FONDO DEL COLOR DE LA TARJETA
-   profileBackgroundCircle: {
-     position: 'absolute',
-     width: 95,            // ← Más grande que la foto
-     height: 95,
-     borderRadius: 47.5,   // ← La mitad del width/height para ser perfectamente circular
-     backgroundColor: '#4299E1', // ← Color primario por defecto
-     top: '50%',           // ← Centrado verticalmente
-     left: '50%',          // ← Centrado horizontalmente
-     marginTop: -47.5,     // ← La mitad de la altura para centrar perfectamente
-     marginLeft: -47.5,    // ← La mitad del ancho para centrar perfectamente
-     zIndex: 1,
-   },
+
+  profileBackgroundCircle: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    zIndex: 1,
+  },
   
   profileGradientBorder: {
     width: 84,
@@ -486,7 +340,7 @@ const styles = StyleSheet.create({
     padding: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 2,             // ← Por encima del círculo de fondo
+    zIndex: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -510,27 +364,26 @@ const styles = StyleSheet.create({
   
   // Tarjeta principal
   mainCard: {
-    marginHorizontal: 24,
-    marginBottom: 24,
+    width: '100%', // ✅ Ancho completo del contenedor
+    maxWidth: 400, // ✅ Límite máximo para pantallas grandes
     borderRadius: 24,
     overflow: 'visible',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOpacity: 0.25, // ✅ Sombra más pronunciada
+    shadowRadius: 20, // ✅ Sombra más grande
+    elevation: 12, // ✅ Mayor elevación en Android
   },
-   cardGradient: {
-     padding: 24,
-     paddingTop: 32,
-     paddingBottom: 28,
-     borderRadius: 24,
-     // backgroundColor se aplica dinámicamente con primaryColor
-   },
+  cardGradient: {
+    padding: 24,
+    paddingTop: 32,
+    paddingBottom: 28,
+    borderRadius: 24,
+  },
   
   // Espacio para la foto que sobresale
   profileSpacing: {
-    height: 32,            // ← Ajustado
+    height: 32,
     marginBottom: 12,
   },
 
@@ -594,6 +447,16 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 14,
+  },
+  postitContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  audioContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
   },
   balanceContainer: {
     flexDirection: 'row',

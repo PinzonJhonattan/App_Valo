@@ -1,7 +1,7 @@
 [
     {
-    "messageContent": "Hola, mensaje de prueba",
-    "messageType": "TEXT",
+    "messageContent": "https://ik.imagekit.io/ValoAppDemo/Grabaci%C3%B3n_1226kp314.m4a",
+    "messageType": "AUDIO",
     "messageDate": "2025-09-11",
     "messageTime": "19:14:58.827",
     "dislikes": 0,
@@ -19,3 +19,4 @@
     }
     }
 ]
+

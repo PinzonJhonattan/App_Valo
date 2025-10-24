@@ -5,7 +5,14 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@assets": ["./assets"],
+      "@components": ["./app/shared/components"],
+      "@hooks": ["./app/shared/hooks"],
+      "@constants": ["./app/shared/constants"],
+      "@screens": ["./app/shared/screens"],
+      "@utils": ["./app/shared/utils"],
+      "@images": ["./assets/images"]
     }
   },
   "include": [
