@@ -53,7 +53,7 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
   const scrollViewRef = useRef<ScrollView>(null);
   const isScrolling = useRef(false);
   
-  //  Animación para deslizar desde abajo
+  // ✅ Animación para deslizar desde abajo
   const translateYAnim = useRef(new Animated.Value(screenHeight)).current;
   const backgroundOpacityAnim = useRef(new Animated.Value(0)).current;
   
@@ -81,7 +81,7 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
 
   useEffect(() => {
     if (visible) {
-      //  Animación de apertura - sube desde abajo rápido
+      // ✅ Animación de apertura - sube desde abajo rápido
       translateYAnim.setValue(screenHeight);
       backgroundOpacityAnim.setValue(0);
       
@@ -115,7 +115,7 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
   }, [visible, translateYAnim, backgroundOpacityAnim]);
 
   const handleClose = () => {
-    //  Animación de cierre - baja rápido
+    // ✅ Animación de cierre - baja rápido
     Animated.parallel([
       Animated.timing(translateYAnim, {
         toValue: screenHeight,
@@ -174,7 +174,7 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
       onRequestClose={handleClose}
       statusBarTranslucent
     >
-      {/* Overlay animado con opacidad */}
+      {/* ✅ Overlay animado con opacidad */}
       <Animated.View 
         style={[
           styles.overlay,
@@ -189,7 +189,7 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
           onPress={handleClose}
         />
 
-        {/* Contenedor centrado con animación de slide desde abajo */}
+        {/* ✅ Contenedor centrado con animación de slide desde abajo */}
         <Animated.View 
           style={[
             styles.centeredContainer,
@@ -198,7 +198,7 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
             }
           ]}
         >
-          {/* FOTO DE PERFIL SALIENDO CON CÍRCULO DE FONDO */}
+          {/* ✅ FOTO DE PERFIL SALIENDO CON CÍRCULO DE FONDO */}
           <View style={styles.profilePhotoContainer}>
             {/* Círculo de fondo del color de la tarjeta */}
             <View style={[styles.profileBackgroundCircle, { backgroundColor: primaryColor }]} />
@@ -282,11 +282,14 @@ export function MarkerModal({ visible, messageUuid, onClose }: MarkerModalProps)
                   <MessagePostit message={messageData.messageContent} />
                 </View>
               )}
+              
+              {/* Sección de AUDIO */}
               {messageData?.messageType === 'AUDIO' && (
                 <View style={styles.audioContainer}>
-                  <MessageAudio />
+                  <MessageAudio audioUrl={messageData.messageContent}/>
                 </View>
               )}
+              
             </View>
           </View>
         </Animated.View>
@@ -454,6 +457,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   audioContainer: {
+    width: '100%',
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 20,
