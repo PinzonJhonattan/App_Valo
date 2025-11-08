@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTabBar } from '../../contexts/tab-bar-context';
 import { useThemeColor } from '../../hooks/use-theme-color';
@@ -12,7 +12,6 @@ import { FloatingActionMenu } from './floating-action-menu';
 export function PersistentTabBar() {
   const [menuVisible, setMenuVisible] = useState(false);
   const { isVisible } = useTabBar();
-  const insets = useSafeAreaInsets();
   
   const tint = useThemeColor({}, 'tint');
   const background = useThemeColor({}, 'background');
@@ -90,30 +89,31 @@ export function PersistentTabBar() {
 
   return (
     <>
-      <View style={[
-        styles.tabBar,
-        {
-          backgroundColor: background,
-          borderTopColor: border,
-          paddingBottom: insets.bottom + 10,
-          paddingTop: 10,
-        }
-      ]}>
-        {tabs.map((tab) => (
-          <HapticTab
-            key={tab.name}
-            onPress={tab.onPress}
-            style={styles.tabButton}
-          >
-            <View style={styles.tabContent}>
-              {tab.icon(tint, false)}
-              <Text style={[styles.tabLabel, { color: tabIconDefault }]}>
-                {tab.title}
-              </Text>
-            </View>
-          </HapticTab>
-        ))}
-      </View>
+      <SafeAreaView style={styles.safeAreaContainer} edges={['bottom']}>
+        <View style={[
+          styles.tabBar,
+          {
+            backgroundColor: background,
+            borderTopColor: border,
+            paddingTop: 10,
+          }
+        ]}>
+          {tabs.map((tab) => (
+            <HapticTab
+              key={tab.name}
+              onPress={tab.onPress}
+              style={styles.tabButton}
+            >
+              <View style={styles.tabContent}>
+                {tab.icon(tint, false)}
+                <Text style={[styles.tabLabel, tab.name === 'create' && styles.createTabLabel, { color: tabIconDefault }]}>
+                  {tab.title}
+                </Text>
+              </View>
+            </HapticTab>
+          ))}
+        </View>
+      </SafeAreaView>
 
       {/* Menú flotante */}
       <FloatingActionMenu 
@@ -125,11 +125,13 @@ export function PersistentTabBar() {
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
+  safeAreaContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+  },
+  tabBar: {
     flexDirection: 'row',
     borderTopWidth: 1,
     height: 70,
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   createButtonContainer: {
-    top: -10,
+    top: -40,
   },
   createButton: {
     width: 56,
@@ -176,5 +178,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
     elevation: 8,
+  },
+  createTabLabel: {
+    marginTop: -35,
   },
 });

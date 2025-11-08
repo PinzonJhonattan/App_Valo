@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ViewShot from 'react-native-view-shot';
-import { AnimatedWaves } from './AnimatedWaves';
 import { CustomMarker } from './custom-marker';
 import dataMocks from './data/data-mocks.json';
 import { useLocation } from './hooks/useLocation';
@@ -123,7 +122,7 @@ const Map = () => {
         {renderHiddenMarkers()}
       </View>
 
-      <AnimatedWaves />
+     {/*  <AnimatedWaves /> */}
 
       <MapView 
         ref={mapRef}

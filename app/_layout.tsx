@@ -2,8 +2,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } fro
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { View } from 'react-native';
 import { PersistentTabBar } from './shared/components/ui/persistent-tab-bar';
 import { ThemeProvider, useTheme } from './shared/context/theme-context';
 import { TabBarProvider } from './shared/contexts/tab-bar-context';
@@ -30,11 +31,22 @@ function RootLayoutContent() {
   );
 }
 
+function ScreenSafeAreaInternal({children}: {children: React.ReactNode}) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={{ flex: 1, paddingBottom: insets.bottom}}>
+      {children}
+    </View>
+  );
+}
+
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <RootLayoutContent />
+        <ScreenSafeAreaInternal>
+          <RootLayoutContent />
+        </ScreenSafeAreaInternal>
       </ThemeProvider>
     </SafeAreaProvider>
   );

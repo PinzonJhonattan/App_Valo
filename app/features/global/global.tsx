@@ -1,22 +1,28 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Map from '../../shared/components/map/map'; // 👈 Importa tu componente Map
 import { ThemedView } from '../../shared/components/themed-view';
 
 const GlobalScreen = React.memo(function GlobalScreen() {
   return (
-    <ThemedView style={styles.container}>
-      {/* Mapa ocupa el resto de la pantalla */}
-      <View style={styles.mapContainer}>
-        <Map />
-      </View>
-    </ThemedView>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ThemedView style={styles.container}>
+        {/* Mapa ocupa el resto de la pantalla */}
+        <View style={styles.mapContainer}>
+          <Map />
+        </View>
+      </ThemedView>
+    </SafeAreaView>
   );
 });
 
 export default GlobalScreen;
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },

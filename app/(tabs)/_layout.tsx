@@ -21,12 +21,7 @@ export default function TabLayout() {
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarStyle: {
-            backgroundColor: background,
-            borderTopColor: border,
-            borderTopWidth: 1,
-            height: 70,
-            paddingBottom: 10,
-            paddingTop: 10,
+            display: 'none', // Ocultamos la barra nativa porque usamos PersistentTabBar
           },
           tabBarLabelStyle: {
             fontSize: 11,

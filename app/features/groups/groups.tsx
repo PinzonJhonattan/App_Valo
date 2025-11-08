@@ -1,24 +1,30 @@
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '../../shared/components/themed-text';
 import { ThemedView } from '../../shared/components/themed-view';
 
 export default function GroupsScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <ThemedText type="title" style={styles.title}>
-          Grupos
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Únete a grupos y comunidades de tu interés
-        </ThemedText>
-      </ScrollView>
-    </ThemedView>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ThemedView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ThemedText type="title" style={styles.title}>
+            Grupos
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Únete a grupos y comunidades de tu interés
+          </ThemedText>
+        </ScrollView>
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },
