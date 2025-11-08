@@ -2,12 +2,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ViewShot from 'react-native-view-shot';
+import { useTheme } from '../../context/theme-context';
 import { CustomMarker } from './custom-marker';
 import dataMocks from './data/data-mocks.json';
 import { useLocation } from './hooks/useLocation';
 import { MarkerModal } from './marker-modal';
 
 const Map = () => {
+  const { theme } = useTheme();
   const { location, error, loading } = useLocation();
   const mapRef = useRef<MapView>(null);
   
@@ -128,7 +130,7 @@ const Map = () => {
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
-        customMapStyle={instagramDarkStyleWithLabels}
+        customMapStyle={theme === 'dark' ? instagramDarkStyleWithLabels : instagramLightStyleWithLabels}
         showsUserLocation={true}
         showsMyLocationButton={true}
         followsUserLocation={true}
@@ -208,6 +210,54 @@ const instagramDarkStyleWithLabels = [
     featureType: "water",
     elementType: "geometry",
     stylers: [{ color: "#0d1b2a" }]
+  }
+];
+
+const instagramLightStyleWithLabels = [
+  {
+    elementType: "geometry",
+    stylers: [{ color: "#f5f5f5" }]
+  },
+  {
+    elementType: "labels.icon",
+    stylers: [{ visibility: "off" }]
+  },
+  {
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#616161" }]
+  },
+  {
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#f5f5f5", weight: 2 }]
+  },
+  {
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#1976d2" }]
+  },
+  {
+    featureType: "poi",
+    stylers: [{ visibility: "off" }]
+  },
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#ffffff" }]
+  },
+  {
+    featureType: "road.arterial",
+    elementType: "geometry",
+    stylers: [{ color: "#ffffff" }]
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#dadada" }]
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#c9d1d9" }]
   }
 ];
 
